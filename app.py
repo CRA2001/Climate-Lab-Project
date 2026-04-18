@@ -3,15 +3,28 @@ import sys
 dpg.create_context()
 dpg.create_viewport(title = "Heat Stress Index Research App", width=600,height=300)
 
+measurements = []
 
+def checklevel(level):
+    if level < 40:
+        print("The level is safe")
+    elif level > 40 and level <= 59.9:
+        print("Caution! ")
+    elif level > 60 and level <= 79.9:
+        print("Danger!")
+    else:
+        print("Extreme!")
 def getinputs():
     day = dpg.get_value("day")
     temperature = dpg.get_value("temp")
     humidity = dpg.get_value("humidity")
-    print(day)
-    print(temperature)
-    print(humidity)
+    hsi = (0.7 * temperature) + (0.2 * humidity)
+    grouped = [day,temperature,humidity,hsi]
+    measurements.append(grouped)
+    checklevel(hsi)
+    # < 40 = safe, between 40 and 59.9 = caution, 60 and 79.9 = danger, and 80 or above = extreme
 def open_data_entry():
+
     if dpg.does_item_exist("Data Entry"):
         dpg.delete_item("Data Entry")
     with dpg.window(tag="data_entry_window",label="Data Entry",width = 400,height=350,pos=[100,50]):
