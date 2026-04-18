@@ -5,23 +5,35 @@ dpg.create_viewport(title = "Heat Stress Index Research App", width=600,height=3
 
 measurements = []
 
-def checklevel(level):
-    if level < 40:
-        print("The level is safe")
-    elif level > 40 and level <= 59.9:
-        print("Caution! ")
-    elif level > 60 and level <= 79.9:
-        print("Danger!")
-    else:
-        print("Extreme!")
-def getinputs():
+class measurement():
+    def __init__(self, day, temperature, humidity, hsi=0, RL="unknown"):
+        self.day = day
+        self.temperature = temperature
+        self.humidity = humidity
+        self.hsi = hsi
+
+    def checklevel(self, hsi):
+        if self.hsi < 40:
+            self.RL = "Safe"
+        elif self.hsi > 40 and self.hsi <= 59.9:
+            self.RL = "Caution"
+        elif self.hsi > 60 and self.hsi <= 79.9:
+            self.RL = "Danger"
+        else:
+            self.RL = "Extreme"
+        return self.RL
+
+idontknowdata = []
+def DataInput():
     day = dpg.get_value("day")
     temperature = dpg.get_value("temp")
     humidity = dpg.get_value("humidity")
     hsi = (0.7 * temperature) + (0.2 * humidity)
-    grouped = [day,temperature,humidity,hsi]
-    measurements.append(grouped)
-    checklevel(hsi)
+    grouped = measurement(day,temperature,humidity,hsi)
+    grouped.checklevel(hsi)
+    idontknowdata.append(grouped)
+    print(idontknowdata)
+
     # < 40 = safe, between 40 and 59.9 = caution, 60 and 79.9 = danger, and 80 or above = extreme
 def open_data_entry():
 
@@ -36,7 +48,7 @@ def open_data_entry():
         dpg.add_input_float(tag="temp")
         dpg.add_text("Humidity")
         dpg.add_input_float(min_value=0.0,tag="humidity")
-        submit_btn = dpg.add_button(label="Yusuf wants to add something",callback=getinputs)
+        submit_btn = dpg.add_button(label="Yusuf wants to add something",callback=DataInput)
 def view_data():
     if dpg.does_item_exist("Data View"):
         dpg.delete_item("Data View")
