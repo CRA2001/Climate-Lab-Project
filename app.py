@@ -35,6 +35,11 @@ def DataInput():
     print(idontknowdata)
 
     # < 40 = safe, between 40 and 59.9 = caution, 60 and 79.9 = danger, and 80 or above = extreme
+
+def putInfile(dataReadings):
+    if dataReadings == []:
+        print("Error cannot empty data readings")
+        return 0
 def open_data_entry():
 
     if dpg.does_item_exist("Data Entry"):
