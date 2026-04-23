@@ -78,6 +78,23 @@ def open_data_entry():
 
 #procedure to open view_data window
 def view_data():
+    #mock data:
+    data = [
+    [1, 34, 45, 72, "High"],
+    [2, 30, 55, 60, "Moderate"],
+    [3, 28, 65, 48, "Low"],
+    [4, 36, 40, 80, "Very High"],
+    [5, 33, 50, 68, "High"],
+    [6, 27, 70, 42, "Low"],
+    [7, 31, 58, 62, "Moderate"],
+    [8, 35, 43, 77, "High"],
+    [9, 29, 60, 52, "Moderate"],
+    [10, 37, 38, 85, "Very High"],
+    [11, 32, 52, 66, "High"],
+    [12, 26, 75, 40, "Low"],
+    [13, 34, 47, 71, "High"],
+    [14, 30, 57, 59, "Moderate"]
+    ]  
     if dpg.does_item_exist("Data View"):
         dpg.delete_item("Data View")
     with dpg.window(tag="data_view_window",label="Data View",width=400,weight=350,pos=[100,50]):
