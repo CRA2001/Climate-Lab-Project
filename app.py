@@ -22,6 +22,12 @@ dpg.create_context()
 dpg.create_viewport(title = "Heat Stress Index Research App", width=600,height=300)
 #temporary storage 
 measurements = []
+
+with dpg.theme() as my_theme:
+    with dpg.theme_component(dpg.mvAll):
+        dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0))  # red text
+        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 10)  # rounded corners
+
 #class to contain data in one value
 class measurement():
     def __init__(self, day, temperature, humidity, hsi=0, RL="unknown"):
@@ -116,6 +122,12 @@ def view_data():
 
             
 
+def center_text(item):
+    parent = dpg.get_item_parent(item)
+    pw = dpg.get_item_width(parent)
+    iw = dpg.get_item_rect_size(item)[0]
+    dpg.set_cursor_pos_x((pw-iw)//2)
+
 
 
 #procedure to close the program
@@ -129,8 +141,9 @@ with dpg.window(tag="Window1"):
     button2 = dpg.add_button(label="Data View",callback=view_data)
     #exit button
     button3 = dpg.add_button(label="Exit",callback=exit,user_data="Value is passed")
-    
 
+
+dpg.bind_theme(my_theme)
 #dearpygui structure - DO NOT DELETE/EDIT
 dpg.setup_dearpygui()
 dpg.show_viewport()
