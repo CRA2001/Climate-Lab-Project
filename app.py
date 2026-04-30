@@ -94,11 +94,29 @@ def view_data():
     [12, 26, 75, 40, "Low"],
     [13, 34, 47, 71, "High"],
     [14, 30, 57, 59, "Moderate"]
-    ]  
-    if dpg.does_item_exist("Data View"):
-        dpg.delete_item("Data View")
-    with dpg.window(tag="data_view_window",label="Data View",width=400,weight=350,pos=[100,50]):
+]
+    
+    if dpg.does_item_exist("data_view_window"):
+        dpg.delete_item("data_view_window")
+
+    with dpg.window(tag="data_view_window", label="Data View", width=400, height=350, pos=[100, 50]):
         dpg.add_text("Data View")
+        
+        with dpg.table(header_row=True):
+            dpg.add_table_column(label="Day No.")
+            dpg.add_table_column(label="Temperature")
+            dpg.add_table_column(label="Humidity")
+            dpg.add_table_column(label="HSI")
+            dpg.add_table_column(label="Risk Level")
+
+            for i in range(0,len(data)):
+                with dpg.table_row():
+                    for j in range(0,len(data[i])):
+                        dpg.add_text(f"{data[i][j]}")
+
+            
+
+
 
 #procedure to close the program
 def exit():
@@ -111,7 +129,7 @@ with dpg.window(tag="Window1"):
     button2 = dpg.add_button(label="Data View",callback=view_data)
     #exit button
     button3 = dpg.add_button(label="Exit",callback=exit,user_data="Value is passed")
-
+    
 
 #dearpygui structure - DO NOT DELETE/EDIT
 dpg.setup_dearpygui()
