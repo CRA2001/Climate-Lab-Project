@@ -1,152 +1,383 @@
 '''
-Climate Application:
+Climate Application
 
 Author: @Carlos Raniel Ariate Arro
 Co-Author(s): @Zain Azrak @Yusuf Bouaouina
 
 Description:
-
-This application is a desktop-based version of the Heat Stress Index (HSI) system developed to analyse environmental conditions in a desert climate. 
-The program allows users to input daily temperature and humidity values, automatically calculates the Heat Stress Index using a predefined scientific formula, 
-and classifies each day into a corresponding risk level.
-The system is implemented using the Dear PyGui library, providing an interactive graphical user interface for efficient data entry and real-time visual feedback. 
-Compared to the console version, this desktop application improves usability, accessibility, and overall user experience through a structured and user-friendly interface.
-The application also enables users to view calculated results, track daily records, and analyse trends such as average heat stress levels and extreme conditions.
-This project builds upon a previously developed console application by extending its functionality into a fully interactive desktop environment.
+Desktop-based Heat Stress Index (HSI) system developed to analyse
+environmental conditions in a desert climate using Dear PyGui.
 '''
 
-#import
-import dearpygui.dearpygui as dpg
+# =========================
+# IMPORTS
+# =========================
+import csv
+import os
 import sys
-dpg.create_context()
-dpg.create_viewport(title = "Heat Stress Index Research App", width=600,height=300)
-#temporary storage 
-measurements = []
+import dearpygui.dearpygui as dpg
 
+# =========================
+# DPG SETUP
+# =========================
+dpg.create_context()
+dpg.create_viewport(
+    title="Heat Stress Index Research App",
+    width=800,
+    height=600
+)
+
+# =========================
+# THEME
+# =========================
 with dpg.theme() as my_theme:
     with dpg.theme_component(dpg.mvAll):
-        dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0))  # red text
-        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 10) # rounded corners
+        dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 255, 255))
+        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 10)
+        dpg.add_theme_style(dpg.mvStyleVar_WindowRounding, 12)
 
-#class to contain data in one value
-class measurement():
-    def __init__(self, day, temperature, humidity, hsi=0, RL="unknown"):
-        self.day = day
-        self.temperature = temperature
+# =========================
+# CLASS
+# =========================
+class Measurement:
+
+    def __init__(self, dayNo, temp, humidity, HSI=0, RL="Unknown"):
+        self.dayNo = dayNo
+        self.temp = temp
         self.humidity = humidity
-        self.hsi = hsi
+        self.HSI = HSI
+        self.RL = RL
 
-    def checklevel(self, hsi):
-        if self.hsi < 40:
+    # Calculate Heat Stress Index
+    def calculateHSI(self):
+        self.HSI = (0.7 * self.temp) + (0.2 * self.humidity)
+        return self.HSI
+
+    # Classify HSI Risk Level
+    def classifyHSI(self):
+
+        if self.HSI < 40:
             self.RL = "Safe"
-        elif self.hsi > 40 and self.hsi <= 59.9:
+
+        elif 40 <= self.HSI <= 59.9:
             self.RL = "Caution"
-        elif self.hsi > 60 and self.hsi <= 79.9:
+
+        elif 60 <= self.HSI <= 79.9:
             self.RL = "Danger"
+
         else:
             self.RL = "Extreme"
+
         return self.RL
 
-#procedure to add into the measurements list
-def DataInput():
-    day = dpg.get_value("day")
-    temperature = dpg.get_value("temp")
-    humidity = dpg.get_value("humidity")
-    hsi = (0.7 * temperature) + (0.2 * humidity)
-    grouped = measurement(day,temperature,humidity,hsi)
-    grouped.checklevel(hsi)
-    measurements.append(grouped)
-    print("Value has been entered")
+# =========================
+# GLOBAL DATA STORAGE
+# =========================
+dataReadings = []
 
-    # < 40 = safe, between 40 and 59.9 = caution, 60 and 79.9 = danger, and 80 or above = extreme
+# =========================
+# FILE FUNCTIONS
+# =========================
+def getFromFile():
 
-#procedure to put readings into a csv file
+    filename = "HSI_Data.csv"
+
+    if os.path.isfile(filename):
+
+        with open(filename, mode='r') as file:
+            csvFile = csv.reader(file)
+            return list(csvFile)
+
+    else:
+        return [["Error: File does not exist"]]
+
 def putInfile(dataReadings):
-    if dataReadings == []:
-        print("Error cannot empty data readings")
 
+    if not dataReadings:
+        return "Error: No data to save"
 
-#procedure to open the data entry window
-def open_data_entry():
+    filename = "HSI_Data.csv"
 
-    if dpg.does_item_exist("Data Entry"):
-        dpg.delete_item("Data Entry")
-    with dpg.window(tag="data_entry_window",label="Data Entry",width = 400,height=350,pos=[100,50]):
-        dpg.add_text("Enter heat stress data.")
-        dpg.add_separator()
-        dpg.add_text("Day No.",)
-        dpg.add_input_int(tag="day")
-        dpg.add_text("Temperature")
-        dpg.add_input_float(tag="temp")
-        dpg.add_text("Humidity")
-        dpg.add_input_float(min_value=0.0,tag="humidity")
-        submit_btn = dpg.add_button(label="Yusuf wants to add something",callback=DataInput)
+    fields = [
+        'Day Number',
+        'Temperature',
+        'Humidity',
+        'Heat Stress Index',
+        'Risk Level'
+    ]
 
-#procedure to open view_data window
-def view_data():
-    #mock data:
-    data = [
-    [1, 34, 45, 72, "High"],
-    [2, 30, 55, 60, "Moderate"],
-    [3, 28, 65, 48, "Low"],
-    [4, 36, 40, 80, "Very High"],
-    [5, 33, 50, 68, "High"],
-    [6, 27, 70, 42, "Low"],
-    [7, 31, 58, 62, "Moderate"],
-    [8, 35, 43, 77, "High"],
-    [9, 29, 60, 52, "Moderate"],
-    [10, 37, 38, 85, "Very High"],
-    [11, 32, 52, 66, "High"],
-    [12, 26, 75, 40, "Low"],
-    [13, 34, 47, 71, "High"],
-    [14, 30, 57, 59, "Moderate"]
-]
-    
-    if dpg.does_item_exist("data_view_window"):
-        dpg.delete_item("data_view_window")
+    rows = [
+        [m.dayNo, m.temp, m.humidity, m.HSI, m.RL]
+        for m in dataReadings
+    ]
 
-    with dpg.window(tag="data_view_window", label="Data View", width=400, height=350, pos=[100, 50]):
-        dpg.add_text("Data View")
-        
-        with dpg.table(header_row=True):
-            dpg.add_table_column(label="Day No.")
-            dpg.add_table_column(label="Temperature")
-            dpg.add_table_column(label="Humidity")
-            dpg.add_table_column(label="HSI")
-            dpg.add_table_column(label="Risk Level")
+    with open(filename, 'w', newline='') as csvfile:
 
-            for i in range(0,len(data)):
-                with dpg.table_row():
-                    for j in range(0,len(data[i])):
-                        dpg.add_text(f"{data[i][j]}")
+        csvwriter = csv.writer(csvfile)
 
-            
+        csvwriter.writerow(fields)
+        csvwriter.writerows(rows)
 
-def center_text(item):
-    parent = dpg.get_item_parent(item)
-    pw = dpg.get_item_width(parent)
-    iw = dpg.get_item_rect_size(item)[0]
-    dpg.set_cursor_pos_x((pw-iw)//2)
+    return "Data saved successfully"
 
+# =========================
+# EDA FUNCTIONS
+# =========================
+def calculateAverage(dataReadings):
 
+    if not dataReadings:
+        return "Error: No data"
 
-#procedure to close the program
-def exit():
+    avg = sum(m.HSI for m in dataReadings) / len(dataReadings)
+
+    return f"Average HSI: {avg:.2f}"
+
+def getHighest(dataReadings):
+
+    if not dataReadings:
+        return "Error: No data"
+
+    maxM = max(dataReadings, key=lambda m: m.temp)
+
+    return f"Highest Temperature: {maxM.temp} on Day {maxM.dayNo}"
+
+def countExtreme(dataReadings):
+
+    if not dataReadings:
+        return "Error: No data"
+
+    count = sum(1 for m in dataReadings if m.RL == "Extreme")
+
+    return f"Extreme Risk Count: {count}"
+
+# =========================
+# DATA INPUT FUNCTION
+# =========================
+def DataInput():
+
+    day = dpg.get_value("day")
+    temp = dpg.get_value("temp")
+    humidity = dpg.get_value("humidity")
+
+    # validation
+    if day <= 0:
+        dpg.set_value("status", "Day number must be greater than 0")
+        return
+
+    m = Measurement(day, temp, humidity)
+
+    m.calculateHSI()
+    m.classifyHSI()
+
+    dataReadings.append(m)
+
+    dpg.set_value(
+        "status",
+        f"Day {day} added | Temp={temp}°C | Humidity={humidity}% | "
+        f"HSI={m.HSI:.2f} | Risk={m.RL}"
+    )
+
+    # auto refresh table
+    ViewData()
+
+# =========================
+# SAVE FUNCTION
+# =========================
+def SaveData():
+
+    msg = putInfile(dataReadings)
+
+    dpg.set_value("status", msg)
+
+# =========================
+# VIEW DATA FUNCTION
+# =========================
+def ViewData():
+    # Mock data (2D Array)
+    mock_data = [
+        [1, 34.5, 45.0, 33.15, "Safe"],
+        [2, 39.2, 50.0, 37.44, "Safe"],
+        [3, 42.0, 65.0, 42.40, "Caution"],
+        [4, 48.3, 70.0, 47.81, "Caution"],
+        [5, 55.0, 72.0, 52.90, "Caution"],
+        [6, 61.0, 75.0, 57.70, "Caution"],
+        [7, 68.0, 80.0, 63.60, "Danger"],
+        [8, 72.5, 82.0, 67.15, "Danger"],
+        [9, 78.0, 85.0, 71.60, "Danger"],
+        [10, 85.0, 90.0, 77.50, "Danger"],
+        [11, 92.0, 95.0, 83.40, "Extreme"],
+        [12, 100.0, 98.0, 89.60, "Extreme"]
+    ]
+    # clear previous rows
+    if dpg.does_item_exist("table_rows"):
+        dpg.delete_item("table_rows")
+
+    with dpg.group(tag="table_rows", parent="data_table"):
+
+        for m in dataReadings:
+
+            with dpg.table_row():
+
+                dpg.add_text(str(m.dayNo))
+                dpg.add_text(f"{m.temp}")
+                dpg.add_text(f"{m.humidity}")
+                dpg.add_text(f"{m.HSI:.2f}")
+                dpg.add_text(m.RL)
+
+# =========================
+# RUN EDA
+# =========================
+def RunEDA():
+
+    avg = calculateAverage(dataReadings)
+    high = getHighest(dataReadings)
+    extreme = countExtreme(dataReadings)
+
+    dpg.set_value(
+        "eda_output",
+        f"{avg}\n{high}\n{extreme}"
+    )
+
+    dpg.configure_item("eda_window", show=True)
+
+# =========================
+# EXIT FUNCTION
+# =========================
+def ExitApp():
     sys.exit("Exiting")
-''
-#main window
-with dpg.window(tag="Window1"):
-    dpg.add_text("HSI system")
-    button1 = dpg.add_button(label="Data Entry",callback=open_data_entry,)
-    button2 = dpg.add_button(label="Data View",callback=view_data)
-    #exit button
-    button3 = dpg.add_button(label="Exit",callback=exit,user_data="Value is passed")
 
+# =========================
+# MAIN WINDOW
+# =========================
+with dpg.window(tag="MainWindow"):
 
+    dpg.add_text("Heat Stress Index System")
+
+    dpg.add_separator()
+
+    dpg.add_button(
+        label="Data Entry",
+        callback=lambda: dpg.configure_item(
+            "data_entry_window",
+            show=True
+        )
+    )
+
+    dpg.add_button(
+        label="Data View",
+        callback=lambda: dpg.configure_item(
+            "data_view_window",
+            show=True
+        )
+    )
+
+    dpg.add_button(
+        label="Run EDA",
+        callback=RunEDA
+    )
+
+    dpg.add_button(
+        label="Save to CSV",
+        callback=SaveData
+    )
+
+    dpg.add_button(
+        label="Exit",
+        callback=ExitApp
+    )
+
+    dpg.add_separator()
+
+    dpg.add_text("", tag="status")
+
+# =========================
+# DATA ENTRY WINDOW
+# =========================
+with dpg.window(
+    tag="data_entry_window",
+    label="Data Entry",
+    show=False,
+    width=400,
+    height=350,
+    pos=[50, 50]
+):
+
+    dpg.add_text("Enter heat stress data")
+    dpg.add_separator()
+
+    dpg.add_text("Day Number")
+    dpg.add_input_int(tag="day")
+
+    dpg.add_text("Temperature")
+    dpg.add_input_float(tag="temp")
+
+    dpg.add_text("Humidity")
+    dpg.add_input_float(
+        tag="humidity",
+        min_value=0.0,
+        max_value=100.0
+    )
+
+    dpg.add_separator()
+
+    dpg.add_button(
+        label="Submit",
+        callback=DataInput
+    )
+
+# =========================
+# DATA VIEW WINDOW
+# =========================
+with dpg.window(
+    tag="data_view_window",
+    label="Data View",
+    show=False,
+    width=600,
+    height=400,
+    pos=[200, 50]
+):
+
+    dpg.add_text("Recorded Heat Stress Data")
+
+    with dpg.table(
+        tag="data_table",
+        header_row=True,
+        borders_innerH=True,
+        borders_outerH=True,
+        borders_innerV=True,
+        borders_outerV=True
+    ):
+
+        dpg.add_table_column(label="Day")
+        dpg.add_table_column(label="Temperature")
+        dpg.add_table_column(label="Humidity")
+        dpg.add_table_column(label="HSI")
+        dpg.add_table_column(label="Risk Level")
+
+# =========================
+# EDA WINDOW
+# =========================
+with dpg.window(
+    tag="eda_window",
+    label="EDA Results",
+    show=False,
+    width=400,
+    height=200,
+    pos=[250, 150]
+):
+
+    dpg.add_text("", tag="eda_output")
+
+# =========================
+# APPLY THEME
+# =========================
 dpg.bind_theme(my_theme)
-#dearpygui structure - DO NOT DELETE/EDIT
+
+# =========================
+# DPG STRUCTURE
+# =========================
 dpg.setup_dearpygui()
 dpg.show_viewport()
-dpg.set_primary_window("Window1",True) #keeps it in a singular one
+dpg.set_primary_window("MainWindow", True)
 dpg.start_dearpygui()
 dpg.destroy_context()
