@@ -255,40 +255,43 @@ with dpg.window(tag="MainWindow"):
 
     dpg.add_separator()
 
-    dpg.add_button(
-        label="Data Entry",
-        callback=lambda: dpg.configure_item(
-            "data_entry_window",
-            show=True
+    with dpg.group(horizontal=True):
+        dpg.add_button(
+            label="Data Entry",
+            callback=lambda: dpg.configure_item(
+                "data_entry_window",
+                show=True
+            )
         )
-    )
 
-    dpg.add_button(
-        label="Data View",
-        callback=lambda: dpg.configure_item(
-            "data_view_window",
-            show=True
+        dpg.add_button(
+            label="Data View",
+            callback=lambda: dpg.configure_item(
+                "data_view_window",
+                show=True
+            )
         )
-    )
 
-    dpg.add_button(
-        label="Run EDA",
-        callback=RunEDA
-    )
+        dpg.add_button(
+            label="Run EDA",
+            callback=RunEDA
+        )
 
-    dpg.add_button(
-        label="Save to CSV",
-        callback=SaveData
-    )
+    with dpg.group(horizontal=True):
 
-    dpg.add_button(
-        label="Exit",
-        callback=ExitApp
-    )
+        dpg.add_button(
+            label="Save to CSV",
+            callback=SaveData
+        )
 
-    dpg.add_separator()
+        dpg.add_button(
+            label="Exit",
+            callback=ExitApp
+        )
 
-    dpg.add_text("", tag="status")
+        dpg.add_separator()
+
+        dpg.add_text("", tag="status")
 
 # =========================
 # DATA ENTRY WINDOW
