@@ -173,7 +173,7 @@ def DataInput():
 
     dpg.set_value(
         "status",
-        f"Day {day} added | Temp={temp}°C | Humidity={humidity}% | "
+        f"Day {day} added | Temp={round(temp,2)}°C | Humidity={round(humidity,2)}% | "
         f"HSI={m.HSI:.2f} | Risk={m.RL}"
     )
 
