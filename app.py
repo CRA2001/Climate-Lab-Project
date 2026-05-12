@@ -19,7 +19,6 @@ import dearpygui.dearpygui as dpg
 global day
 global temp
 global humidity
-global list
 list = []
 # =========================
 # DPG SETUP
@@ -175,13 +174,19 @@ def DataInput():
 
     dataReadings.append(m)
     
+    with dpg.table_row(parent="data_table"):
+        dpg.add_text(str(day))
+        dpg.add_text(f"{temp}°C")
+        dpg.add_text(f"{humidity}%")
+        dpg.add_text(f"{m.HSI:.2f}")
+        dpg.add_text(m.RL)
+    
     dpg.set_value(
         "status",
         f"Day {day} added | Temp={round(temp,2)}°C | Humidity={round(humidity,2)}% | "
         f"HSI={m.HSI:.2f} | Risk={m.RL}"
     )
-
-    list.append([[f"{day}"], [f"{temp}°C"], [f"{humidity}%"], [f"HSI={m.HSI:.2f}"], [f"Risk={m.RL}"]])
+    
 # =========================
 # SAVE FUNCTION
 # =========================
@@ -325,8 +330,7 @@ with dpg.window(
         dpg.add_table_column(label="HSI")
         dpg.add_table_column(label="Risk Level")
 
-        with dpg.table_row():
-            dpg.add_text("No data yet")
+        
 
 # =========================
 # EDA WINDOW
