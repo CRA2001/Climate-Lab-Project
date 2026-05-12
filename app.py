@@ -16,7 +16,11 @@ import csv
 import os
 import sys
 import dearpygui.dearpygui as dpg
-
+global day
+global temp
+global humidity
+global list
+list = []
 # =========================
 # DPG SETUP
 # =========================
@@ -170,16 +174,14 @@ def DataInput():
     m.classifyHSI()
 
     dataReadings.append(m)
-
+    
     dpg.set_value(
         "status",
         f"Day {day} added | Temp={round(temp,2)}°C | Humidity={round(humidity,2)}% | "
         f"HSI={m.HSI:.2f} | Risk={m.RL}"
     )
 
-    # auto refresh table
-    ViewData()
-
+    list.append([[f"{day}"], [f"{temp}°C"], [f"{humidity}%"], [f"HSI={m.HSI:.2f}"], [f"Risk={m.RL}"]])
 # =========================
 # SAVE FUNCTION
 # =========================
@@ -189,40 +191,6 @@ def SaveData():
 
     dpg.set_value("status", msg)
 
-# =========================
-# VIEW DATA FUNCTION
-# =========================
-def ViewData():
-    # Mock data (2D Array)
-    mock_data = [
-        [1, 34.5, 45.0, 33.15, "Safe"],
-        [2, 39.2, 50.0, 37.44, "Safe"],
-        [3, 42.0, 65.0, 42.40, "Caution"],
-        [4, 48.3, 70.0, 47.81, "Caution"],
-        [5, 55.0, 72.0, 52.90, "Caution"],
-        [6, 61.0, 75.0, 57.70, "Caution"],
-        [7, 68.0, 80.0, 63.60, "Danger"],
-        [8, 72.5, 82.0, 67.15, "Danger"],
-        [9, 78.0, 85.0, 71.60, "Danger"],
-        [10, 85.0, 90.0, 77.50, "Danger"],
-        [11, 92.0, 95.0, 83.40, "Extreme"],
-        [12, 100.0, 98.0, 89.60, "Extreme"]
-    ]
-    # clear previous rows
-    if dpg.does_item_exist("table_rows"):
-        dpg.delete_item("table_rows")
-
-    with dpg.group(tag="table_rows", parent="data_table"):
-
-        for m in dataReadings:
-
-            with dpg.table_row():
-
-                dpg.add_text(str(m.dayNo))
-                dpg.add_text(f"{m.temp}")
-                dpg.add_text(f"{m.humidity}")
-                dpg.add_text(f"{m.HSI:.2f}")
-                dpg.add_text(m.RL)
 
 # =========================
 # RUN EDA
@@ -356,6 +324,9 @@ with dpg.window(
         dpg.add_table_column(label="Humidity")
         dpg.add_table_column(label="HSI")
         dpg.add_table_column(label="Risk Level")
+
+        with dpg.table_row():
+            dpg.add_text("No data yet")
 
 # =========================
 # EDA WINDOW
